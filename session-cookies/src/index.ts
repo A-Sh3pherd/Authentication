@@ -1,14 +1,19 @@
 import connectRedis from 'connect-redis';
 import cors from 'cors';
+import 'dotenv/config'; // making sure .env will work
 import express from 'express';
 import session from 'express-session';
 import Redis from 'ioredis';
-import 'dotenv/config'; // making sure .env will work
+import { createConnection, getRepository } from 'typeorm';
 import { isAuth } from './isAuth';
+import { User } from './models/User';
 
 (async () => {
+    // Db
+    await createConnection();
     // Express
     const app = express();
+    app.use(express.json());
     // Redis
     const redis = new Redis();
     const RedisStore = connectRedis(session)
@@ -35,10 +40,37 @@ import { isAuth } from './isAuth';
     }));
 
     // check if authenticated
-    app.use('/', (req, next) => {
-        isAuth(req, next);
-        // If were here, it means we are authenticated
-        console.log('Authenticated!')
+    app.get('/', (req, res) => {
+        return isAuth(req, res);
+    })
+
+    // Signin
+    app.get('/login', async (req, res) => {
+        const { username, password } = req.body;
+        const user = await User.findOne({ username, password })
+        if (!user) {
+            // no user
+            return res.send('No user')
+        }
+        // @ts-ignore | don't recognise userId
+        req.session.userId = user.id;
+        return res.send({ user });
+    })
+
+    // Signup
+    app.post('/signup', async (req, res) => {
+        const { username, password } = req.body;
+        const repo = getRepository(User);
+        try {
+            const user = await repo.create({ username, password }).save();
+            console.log(user)
+            res.send(user)
+            // const user = await repo.findOne({ username })
+            // if (user) return res.send('User already exist.');
+        } catch (e) {
+            console.log(e);
+        }
+
     })
     // App Connection
     const port = process.env.PORT;
@@ -47,4 +79,8 @@ import { isAuth } from './isAuth';
     });
 
 } // END
-)();
+)()
+    .catch(e => {
+        console.log(e)
+    })
+    ;

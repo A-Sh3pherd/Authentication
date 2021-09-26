@@ -1,17 +1,10 @@
 import 'dotenv/config';
-import { Request, Response } from 'express';
-import { Session } from 'express-session';
 
-type MyContext = {
-    req: Request & { session: Session & { userId: number } };
-    res: Response;
-    next: any
-
-}
 // Middleware that checks  tokens
-export const isAuth = (req, next): MyContext => {
+export function isAuth(req, res) {
     if (!req.session.userId) {
-        throw new Error('Not authenticated')
+        res.send({ message: 'Not authenticated !' })
     }
-    return next();
+    console.log(req.session)
+    res.send({ message: 'Authenticated !' })
 };

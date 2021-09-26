@@ -2,11 +2,13 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.isAuth = void 0;
 require("dotenv/config");
-const isAuth = (req, next) => {
+function isAuth(req, res) {
     if (!req.session.userId) {
-        throw new Error('Not authenticated');
+        res.send({ message: 'Not authenticated !' });
     }
-    return next();
-};
+    console.log(req.session);
+    res.send({ message: 'Authenticated !' });
+}
 exports.isAuth = isAuth;
+;
 //# sourceMappingURL=isAuth.js.map
