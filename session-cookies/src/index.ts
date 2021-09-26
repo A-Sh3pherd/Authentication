@@ -4,6 +4,7 @@ import express from 'express';
 import session from 'express-session';
 import Redis from 'ioredis';
 import 'dotenv/config'; // making sure .env will work
+import { isAuth } from './isAuth';
 
 (async () => {
     // Express
@@ -33,6 +34,12 @@ import 'dotenv/config'; // making sure .env will work
         resave: false // resave existing ?
     }));
 
+    // check if authenticated
+    app.use('/', (req, next) => {
+        isAuth(req, next);
+        // If were here, it means we are authenticated
+        console.log('Authenticated!')
+    })
     // App Connection
     const port = process.env.PORT;
     app.listen(port, () => {
