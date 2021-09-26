@@ -64,12 +64,25 @@ const User_1 = require("./models/User");
         try {
             const user = yield repo.create({ username, password }).save();
             console.log(user);
-            res.send(user);
+            res.send({ user });
         }
         catch (e) {
             console.log(e);
+            res.send(e);
         }
     }));
+    app.post('/logout', (req, res) => {
+        return new Promise((resolve) => req.session.destroy(err => {
+            if (err) {
+                console.log(err);
+                res.send({ message: err });
+                return resolve(false);
+            }
+            res.clearCookie(process.env.COOKIE_NAME);
+            res.send({ message: 'Cookie removed' });
+            return resolve(true);
+        }));
+    });
     const port = process.env.PORT;
     app.listen(port, () => {
         console.log(`Server up on port ${port}`);

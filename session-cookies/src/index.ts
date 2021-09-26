@@ -64,13 +64,28 @@ import { User } from './models/User';
         try {
             const user = await repo.create({ username, password }).save();
             console.log(user)
-            res.send(user)
+            res.send({ user })
             // const user = await repo.findOne({ username })
             // if (user) return res.send('User already exist.');
         } catch (e) {
             console.log(e);
+            res.send(e)
         }
 
+    })
+
+    app.post('/logout', (req, res) => {
+        return new Promise((resolve) =>
+            req.session.destroy(err => {
+                if (err) {
+                    console.log(err);
+                    res.send({ message: err })
+                    return resolve(false)
+                }
+                res.clearCookie(process.env.COOKIE_NAME!) // Clearing the cookie
+                res.send({ message: 'Cookie removed' })
+                return resolve(true)
+            }));
     })
     // App Connection
     const port = process.env.PORT;
